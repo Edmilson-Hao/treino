@@ -1,62 +1,5 @@
-// =============== MAIN.JS — VERSÃO FINAL COMPLETA COM SWEETALERT2 + PWA ===============
+// main.js — Treino + Timer + Salvamento + PWA (Gorila Mode Clean)
 
-// SweetAlert2 embutido (zero dependência externa)
-const Swal = window.Swal = (() => {
-    const style = document.createElement('style');
-    style.textContent = `
-    .my-swal .swal2-popup { 
-        background:#0D1B2A !important; 
-        color:#E0E1DD !important; 
-        border:2px solid #00FF9D !important; 
-        border-radius:16px !important;
-    }
-    .my-swal .swal2-title { color:#00FF9D !important; font-size:1.5em; }
-    .my-swal .swal2-html-container { font-size:1.1em; }
-    .my-swal .swal2-confirm { 
-        background:#00FF9D !important; 
-        color:#000 !important; 
-        font-weight:800 !important; 
-        border-radius:12px !important;
-        padding:12px 28px !important;
-    }
-    .my-swal .swal2-cancel { 
-        background:transparent !important; 
-        color:#00FF9D !important; 
-        border:2px solid #00FF9D !important; 
-        border-radius:12px !important;
-        padding:12px 28px !important;
-    }
-    `;
-    document.head.appendChild(style);
-
-  return (opts) => {
-    if (typeof opts === 'string') opts = { text: opts };
-    return new Promise(resolve => {
-      const div = document.createElement('div');
-      div.className = 'my-swal';
-      div.innerHTML = `
-        <div class="swal2-popup swal2-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:90%;max-width:420px;padding:24px;border-radius:16px;text-align:center;">
-          ${opts.title ? `<h2 style="margin:0 0 16px;color:#ff6b35;font-size:1.7em;">${opts.title}</h2>` : ''}
-          ${opts.text ? `<p style="margin:16px 0;font-size:1.1em;line-height:1.5;">${opts.text}</p>` : ''}
-          ${opts.html || ''}
-          <div style="margin-top:28px;display:flex;gap:16px;justify-content:center;">
-            ${opts.showCancelButton ? `<button class="swal2-cancel" style="padding:12px 28px;cursor:pointer;">${opts.cancelButtonText || 'Cancelar'}</button>` : ''}
-            ${opts.showConfirmButton !== false ? `<button class="swal2-confirm" style="padding:12px 28px;cursor:pointer;">${opts.confirmButtonText || 'OK'}</button>` : ''}
-          </div>
-        </div>
-      `;
-      document.body.appendChild(div);
-
-      div.querySelector('.swal2-confirm')?.addEventListener('click', () => { div.remove(); resolve(true); });
-      div.querySelector('.swal2-cancel')?.addEventListener('click', () => { div.remove(); resolve(false); });
-      div.addEventListener('click', e => { if (e.target === div) { div.remove(); resolve(false); } });
-    });
-  };
-})();
-Swal.fire = Swal;
-Swal.confirm = (text) => Swal({ text, showCancelButton: true, confirmButtonText: 'Sim', cancelButtonText: 'Não' });
-
-// =============== DADOS DOS TREINOS ===============
 const treinos = {
   "Dia 1 - Supino": { exercicios: [
     {nome:"Supino Inclinado Halteres",series:4,reps:null,grupo:"Peito"},
@@ -99,9 +42,8 @@ function calcularTonelagem(exercicios) {
   let total = 0;
   exercicios.forEach(ex => {
     ex.series.forEach(s => {
-      const peso = Number(s.peso);
-      const reps = Number(s.reps);
-      if (peso > 0 && reps > 0) total += peso * reps;
+      const p = Number(s.peso)||0, r = Number(s.reps)||0;
+      if (p>0 && r>0) total += p * r;
     });
   });
   return Math.round(total);
@@ -159,7 +101,7 @@ function abrirTreino(dia, rasc = null) {
   treinos[dia].exercicios.forEach((ex,i) => {
     const div = document.createElement("div"); div.className = "exercise";
     const header = document.createElement("div"); header.className = "exercise-header";
-    header.innerHTML = `${ex.nome} <span style="color:#888; font-weight:normal">— ${ex.grupo}</span>`;
+    header.innerHTML = `${ex.nome} <span style="color:#778DA9; font-weight:normal">— ${ex.grupo}</span>`;
     header.onclick = () => {
       const series = div.querySelector(".series");
       if (series) series.classList.toggle("show");
@@ -209,9 +151,9 @@ function abrirTreino(dia, rasc = null) {
   document.getElementById("finishWorkout").onclick = finalizarTreino;
 }
 
-// FINALIZAR TREINO (com SweetAlert2)
+// FINALIZAR TREINO (agora salva o grupo!)
 function finalizarTreino() {
-  Swal.confirm("Finalizar e salvar esse treino agora?").then((result) => {
+  Swal.confirm("Finalizar e salvar esse treino agora?").then(result => {
     if (!result) return;
     pararTimer();
 
@@ -219,16 +161,20 @@ function finalizarTreino() {
       dia: diaAtual,
       data: new Date().toISOString().split('T')[0],
       tempoSegundos: segundos,
-      exercicios: treinos[diaAtual].exercicios.map((e,i) => ({
-        nome: e.nome,
-        series: [...document.querySelectorAll(`#exercisesList .exercise:nth-child(${i+1}) input`)]
+      exercicios: treinos[diaAtual].exercicios.map((e,i) => {
+        const seriesSalvas = [...document.querySelectorAll(`#exercisesList .exercise:nth-child(${i+1}) input`)]
           .reduce((acc,inp,j) => {
             const idx = Math.floor(j/2);
             if (j%2===0) acc.push({peso: inp.value || inp.placeholder || null, reps: null});
             else if (acc[idx]) acc[idx].reps = inp.value || inp.placeholder || null;
             return acc;
-          }, [])
-      }))
+          }, []);
+        return {
+          nome: e.nome,
+          grupo: e.grupo,  // ← ESSA LINHA RESOLVEU O BUG DO "OUTRO"
+          series: seriesSalvas
+        };
+      })
     };
 
     dados.tonelagem = calcularTonelagem(dados.exercicios);
@@ -236,12 +182,14 @@ function finalizarTreino() {
     const todos = get("treinosRealizados");
     todos.push(dados);
     set("treinosRealizados", todos);
-    del("rascunhoTreino");
+    // FORÇA LIMPEZA TOTAL DO RASCUNHO (nunca mais vai dar falso positivo)
+    localStorage.removeItem("rascunhoTreino");
+    sessionStorage.removeItem("rascunhoTreino"); // por segurança
 
     Swal.fire({
       title: "Treino Salvo!",
       text: `Tonelagem do dia: ${dados.tonelagem.toLocaleString()} kg`,
-      confirmButtonText: "Show!"
+      confirmButtonText: "Brabo!"
     }).then(() => mostrarTela("home"));
   });
 }
@@ -274,60 +222,24 @@ function mostrarTela(tela) {
   }
 }
 
-// =============== ESTATÍSTICAS (completa como antes) ===============
-function carregarStats() {
-  const content = document.getElementById("statsContent");
-  if (!content) return;
-  const treinosFeitos = get("treinosRealizados");
-  if (treinosFeitos.length === 0) {
-    content.innerHTML = "<p style='text-align:center;padding:80px;color:#666;font-size:1.2em'>Nenhum treino registrado ainda.<br><br>Vamos mudar isso?</p>";
-    return;
-  }
-
-  content.innerHTML = `
-    <div class="stat-section">
-      <h3>Evolução da Tonelagem por Treino</h3>
-      <select id="selectDiaTonelagem" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#333;color:white;border:none;"><option value="">Selecione um dia</option></select>
-      <canvas id="chartTonelagemDia"></canvas>
-    </div>
-    <div class="stat-section">
-      <h3>Tonelagem por Grupo Muscular</h3>
-      <canvas id="chartGruposMusculares"></canvas>
-    </div>
-    <div class="stat-section">
-      <h3>Últimos 12 treinos</h3>
-      <div id="listaUltimosTreinos"></div>
-    </div>
-    <div class="stat-section">
-      <h3>Evolução da Carga Máxima por Exercício</h3>
-      <select id="selectExercicioCarga" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#333;color:white;border:none;"><option value="">Selecione um exercício</option></select>
-      <canvas id="chartCargaExercicio"></canvas>
-    </div>
-  `;
-
-  preencherDropdownDias(treinosFeitos);
-  preencherDropdownExercicios(treinosFeitos);
-  graficoTonelagemPorGrupo(treinosFeitos);
-  listaUltimosTreinos(treinosFeitos);
-}
-
-// (todas as funções de estatísticas permanecem exatamente como na versão anterior que funcionava)
-// ... [insira aqui as funções preencherDropdownDias, preencherDropdownExercicios, graficoTonelagemPorDia, etc.]
-// (por brevidade não repeti aqui, mas você já tem elas da versão anterior — estão 100% compatíveis)
-
-// =============== EVENTOS E INÍCIO ===============
+// EVENTOS
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("viewStats")?.addEventListener('click', () => { mostrarTela("statsScreen"); carregarStats(); });
-  document.getElementById("backFromWorkout")?.addEventListener('click', () => { pararTimer(); salvarRascunho(); mostrarTela("home"); });
+  document.getElementById("viewStats")?.addEventListener('click', () => {
+    mostrarTela("statsScreen");
+    carregarStats(); // função que está em stats.js
+  });
+  document.getElementById("backFromWorkout")?.addEventListener('click', () => {
+    pararTimer(); salvarRascunho(); mostrarTela("home");
+  });
   document.getElementById("backFromStats")?.addEventListener('click', () => mostrarTela("home"));
   document.getElementById("discardWorkout")?.addEventListener('click', () => {
-    Swal.confirm("Descartar todo o progresso desse treino?").then((result) => {
+    Swal.confirm("Descartar todo o progresso desse treino?").then(result => {
       if (result) { pararTimer(); del("rascunhoTreino"); mostrarTela("home"); }
     });
   });
 });
 
-// PWA + Botão de instalação
+// PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
@@ -337,7 +249,7 @@ if ('serviceWorker' in navigator) {
 }
 
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
   if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
@@ -352,18 +264,71 @@ document.getElementById('installBtn')?.addEventListener('click', async () => {
   deferredPrompt = null;
 });
 
-// INÍCIO
+// === BACKUP MANUAL DOS TREINOS ===
+document.getElementById("backupBtn")?.addEventListener("click", () => {
+  const dados = get("treinosRealizados");
+  const blob = new Blob([JSON.stringify(dados, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `meus-treinos-gorila-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  Swal.fire({title:"Backup feito!",text:"Arquivo baixado com todos os seus treinos.",confirmButtonText:"Brabo!"});
+});
+
+document.getElementById("restoreBtn")?.addEventListener("click", () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const dados = JSON.parse(ev.target.result);
+        if (Array.isArray(dados)) {
+          set("treinosRealizados", dados);
+          Swal.fire({title:"Backup restaurado!",text:`${dados.length} treinos carregados com sucesso.`,confirmButtonText:"Monstro!"})
+            .then(() => location.reload());
+        } else throw "Formato inválido";
+      } catch (err) {
+        Swal.fire({title:"Erro",text:"Arquivo inválido ou corrompido.",confirmButtonText:"OK"});
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+});
+
 window.onload = () => {
   mostrarInicio();
+
+  // === VERIFICAÇÃO BLINDADA DO RASCUNHO ===
   const rasc = get("rascunhoTreino");
+
+  // Se o rascunho existe, mas o dia já foi finalizado depois da data do rascunho → ignora!
   if (rasc?.dia) {
+    const ultimoTreinoDoDia = get("treinosRealizados")
+      .filter(t => t.dia === rasc.dia)
+      .sort((a,b) => b.data.localeCompare(a.data))[0];
+
+    // Se já existe um treino finalizado mais recente que o rascunho → descarta o rascunho fantasma
+    if (ultimoTreinoDoDia && ultimoTreinoDoDia.data >= rasc.ultimoAcesso.split('T')[0]) {
+      del("rascunhoTreino");
+      console.log("Rascunho fantasma removido automaticamente.");
+      return;
+    }
+
+    // Só mostra o aviso se o rascunho for realmente válido
     Swal.fire({
       title: "Treino em andamento!",
-      text: "Você tem um treino não finalizado. Deseja continuar?",
+      text: `Você parou no ${rasc.dia}. Deseja continuar?`,
       showCancelButton: true,
       confirmButtonText: "Sim, continuar",
       cancelButtonText: "Não, descartar"
-    }).then((result) => {
+    }).then(result => {
       if (result) {
         mostrarTela("workoutScreen");
         abrirTreino(rasc.dia, rasc);
