@@ -1,0 +1,143 @@
+:root {
+  --bg: #0f0f0f;
+  --card: #1a1a1a;
+  --text: #fff;
+  --accent: #ff6b35;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; font-family:system-ui,-apple-system,sans-serif; }
+body { background:var(--bg); color:var(--text); padding:20px; min-height:100vh; position:relative; }
+.container { max-width:500px; margin:0 auto; position:relative; }
+
+h1 { 
+  text-align:center; 
+  color:var(--accent); 
+  font-size:clamp(1.8em, 5vw, 2.5em); 
+  margin:20px 0 40px; 
+  font-weight:700;
+  letter-spacing:1px;
+}
+h2 { 
+  text-align:center; 
+  margin:30px 0 20px; 
+  color:var(--accent); 
+  font-size:1.5em;
+  font-weight:600;
+}
+
+.hidden { display:none !important; }
+
+button {
+  background:var(--accent); 
+  color:#000; 
+  border:none; 
+  padding:15px 25px;
+  margin:10px 5px; 
+  border-radius:12px; 
+  font-weight:bold; 
+  font-size:1.1em; 
+  cursor:pointer;
+  width:100%;
+  transition: opacity 0.2s;
+}
+button:active { opacity:0.8; }
+
+.workout-day {
+  background:var(--card); 
+  padding:25px; 
+  margin:15px 0; 
+  border-radius:15px;
+  text-align:center; 
+  font-size:1.4em; 
+  cursor:pointer; 
+  border:2px solid #333;
+  transition: all 0.2s;
+}
+.workout-day:hover { border-color:var(--accent); }
+.workout-day:active { background:#333; }
+.workout-day small { display:block; margin-top:5px; color:#aaa; font-size:0.9em; }
+
+.back-btn {
+  position:fixed; 
+  top:20px; 
+  left:20px; 
+  background:rgba(15,15,15,0.9); 
+  border:2px solid var(--accent); 
+  color:var(--accent); 
+  width:50px; 
+  height:50px; 
+  border-radius:50%; 
+  font-size:1.5em; 
+  cursor:pointer; 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  z-index:100;
+  backdrop-filter:blur(10px);
+}
+.back-btn:active { background:var(--accent); color:#000; }
+
+.timer {
+  text-align:center; 
+  font-size:clamp(3.5em, 12vw, 5em); 
+  margin:30px 0; 
+  color:var(--accent); 
+  font-weight:bold; 
+  letter-spacing:0.1em;
+  text-shadow:0 0 20px rgba(255,107,53,0.5);
+}
+
+.exercise {
+  background:var(--card); 
+  margin:20px 0; 
+  border-radius:15px; 
+  overflow:hidden;
+}
+.exercise-header {
+  background:#222; 
+  padding:18px; 
+  font-size:1.3em; 
+  cursor:pointer;
+  position:relative;
+}
+.exercise-header.open::after {
+  content:"▲"; 
+  position:absolute; 
+  right:18px; 
+  transition:0.3s;
+}
+.exercise-header::after {
+  content:"▼"; 
+  position:absolute; 
+  right:18px; 
+  transition:0.3s;
+}
+.series { padding:15px; display:none; background:#1a1a1a; }
+.series.show { display:block; }
+
+input {
+  width:90px; 
+  padding:12px; 
+  margin:0 8px; 
+  border-radius:8px; 
+  border:none;
+  background:#333; 
+  color:white; 
+  text-align:center; 
+  font-size:1.1em;
+}
+input:focus { outline:2px solid var(--accent); background:#444; }
+
+.actions { text-align:center; margin:40px 0; flex-wrap:wrap; display:flex; gap:10px; justify-content:center; }
+#discardWorkout { background:#333; color:var(--accent); border:2px solid var(--accent); width:auto; flex:1; max-width:200px; }
+
+.stat-section { background:var(--card); padding:20px; margin:20px 0; border-radius:15px; }
+canvas { margin-top:15px; }
+
+/* Responsivo para evitar quebras */
+@media (max-width: 480px) {
+  body { padding:10px; }
+  .back-btn { top:10px; left:10px; }
+  .actions { flex-direction:column; }
+  button { padding:12px 20px; }
+}

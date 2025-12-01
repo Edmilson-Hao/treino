@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff6b35">
+  <title>Meu Treino</title>
+  
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>MEU TREINO</h1>
+
+  <!-- TELA INICIAL -->
+  <div id="home">
+    <button id="viewStats">Estatísticas</button>
+    <h2>Escolha o dia</h2>
+    <div id="daysList"></div>
+  </div>
+
+  <!-- TELA DO TREINO -->
+  <div id="workoutScreen" class="hidden">
+    <button class="back-btn" id="backFromWorkout">←</button>
+    <h2 id="workoutTitle"></h2>
+    <div class="timer">00:00</div>
+    <button id="timerBtn">Iniciar</button>
+    <div id="exercisesList"></div>
+    <div class="actions">
+      <button id="finishWorkout">Finalizar Treino</button>
+      <button id="discardWorkout">Descartar</button>
+    </div>
+  </div>
+
+  <!-- ESTATÍSTICAS -->
+  <div id="statsScreen" class="hidden">
+    <button class="back-btn" id="backFromStats">←</button>
+    <h2>Estatísticas</h2>
+    <div id="statsContent"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
