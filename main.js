@@ -2,16 +2,32 @@
 
 // SweetAlert2 embutido (zero dependência externa)
 const Swal = window.Swal = (() => {
-  const style = document.createElement('style');
-  style.textContent = `
-    .my-swal { font-family: system-ui, sans-serif; }
-    .my-swal .swal2-popup { background:#1a1a1a !important; color:#fff !important; border:2px solid #ff6b35 !important; border-radius:16px !important; }
-    .my-swal .swal2-title { color:#ff6b35 !important; }
-    .my-swal .swal2-html-container { color:#ddd !important; }
-    .my-swal .swal2-confirm { background:#ff6b35 !important; color:#000 !important; font-weight:bold !important; border-radius:12px !important; }
-    .my-swal .swal2-cancel { background:#333 !important; color:#ff6b35 !important; border:2px solid #ff6b35 !important; border-radius:12px !important; }
-  `;
-  document.head.appendChild(style);
+    const style = document.createElement('style');
+    style.textContent = `
+    .my-swal .swal2-popup { 
+        background:#0D1B2A !important; 
+        color:#E0E1DD !important; 
+        border:2px solid #00FF9D !important; 
+        border-radius:16px !important;
+    }
+    .my-swal .swal2-title { color:#00FF9D !important; font-size:1.5em; }
+    .my-swal .swal2-html-container { font-size:1.1em; }
+    .my-swal .swal2-confirm { 
+        background:#00FF9D !important; 
+        color:#000 !important; 
+        font-weight:800 !important; 
+        border-radius:12px !important;
+        padding:12px 28px !important;
+    }
+    .my-swal .swal2-cancel { 
+        background:transparent !important; 
+        color:#00FF9D !important; 
+        border:2px solid #00FF9D !important; 
+        border-radius:12px !important;
+        padding:12px 28px !important;
+    }
+    `;
+    document.head.appendChild(style);
 
   return (opts) => {
     if (typeof opts === 'string') opts = { text: opts };
