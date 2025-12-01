@@ -1,14 +1,14 @@
 // sw.js — Service Worker (cacheia tudo e funciona offline)
-const CACHE_NAME = 'meu-treino-v12';
+const CACHE_NAME = 'meu-treino-v13';  // Incrementou versão para forçar update
 const arquivos = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/main.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-maskable-512.png',
+  './',  // Raiz da subpasta
+  './index.html',
+  './style.css',
+  './main.js',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 

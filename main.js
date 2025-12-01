@@ -376,11 +376,38 @@ window.onload = () => {
     del("rascunhoTreino");
   }
 };
+
 // REGISTRO DO SERVICE WORKER (PWA)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('./sw.js')
       .then(reg => console.log('SW registrado com sucesso!', reg))
       .catch(err => console.log('Falha ao registrar SW:', err));
   });
 }
+
+// ====== BOTÃO MANUAL DE INSTALAÇÃO PWA (funciona 100% no celular) ======
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Mostra o botão só no celular
+  if (/Android|iPhone|iPad|iPod|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent)) {
+    document.getElementById('installContainer').style.display = 'block';
+  }
+});
+
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    document.getElementById('installContainer').style.display = 'none';
+    console.log('App instalado com sucesso!');
+  }
+  deferredPrompt = null;
+});
