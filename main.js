@@ -1,5 +1,4 @@
 // main.js — Gorila Mode: enxuto, rápido e indestrutível
-
 const treinos = { /* ← seu objeto de treinos (mantido igual) */ 
   "Dia 1 - Supino": { exercicios: [ {nome:"Supino Inclinado Halteres",series:4,reps:null,grupo:"Peito"}, /* ... todo o resto igual ... */ ]},
   "Dia 2 - Terra": { exercicios: [ /* ... */ ]},
@@ -164,5 +163,100 @@ document.getElementById("backFromWorkout")?.addEventListener("click",()=>{timer&
 document.getElementById("backFromStats")?.addEventListener("click",()=>mostrarTela("home"));
 document.getElementById("discardWorkout")?.addEventListener("click",()=>Swal.confirm("Descartar tudo?").then(ok=>{if(ok){timer&&clearInterval(timer);del("rascunho");mostrarTela("home");}}));
 
-// PWA
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+// Força atualização do Service Worker quando mudar a versão
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          // Novo SW instalado → recarrega
+          location.reload();
+        }
+      });
+    });
+  });
+}
+
+// ====== PWA + BOTÃO DE INSTALAÇÃO (FUNCIONA 100%) ======
+let installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();        // Impede o banner automático do Chrome
+  installPrompt = e;         // Guarda o evento pra usar quando quiser
+  document.getElementById('installContainer').style.display = 'block';
+});
+
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+  if (!installPrompt) return;
+
+  installPrompt.prompt(); // Mostra o banner oficial do sistema
+
+  const { outcome } = await installPrompt.userChoice;
+  if (outcome === 'accepted') {
+    document.getElementById('installContainer').style.display = 'none';
+    Swal.fire({
+      title: "Instalado com sucesso!",
+      text: "Gorila Mode agora está na sua tela inicial",
+      icon: "success",
+      timer: 2500,
+      showConfirmButton: false
+    });
+  }
+  installPrompt = null;
+});
+
+// Esconde o botão se já estiver instalado
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installContainer').style.display = 'none';
+});
+
+// ====== VERSIONAMENTO + ATUALIZAÇÃO AUTOMÁTICA + AVISO BRABO ======
+// (coloque ESTE BLOCO INTEIRO no final do main.js, depois do window.onload)
+
+const APP_VERSION = "v2.1"; // ← aumenta esse número toda vez que fizer update importante
+
+// Só executa depois que get/set já foram definidos
+if (typeof get === "function" && typeof set === "function") {
+
+  // 1. Detecta versão antiga → limpa cache velho, mantém treinos, atualiza
+  if (get("appVersion") !== APP_VERSION) {
+    const treinosSalvos = get("treinosRealizados") || [];
+    const rascunhoSalvo = get("rascunho");
+
+    localStorage.clear(); // limpa tudo que não é dado do usuário
+
+    // Restaura apenas os dados importantes
+    set("treinosRealizados", treinosSalvos);
+    if (rascunhoSalvo) set("rascunho", rascunhoSalvo);
+    set("appVersion", APP_VERSION);
+    set("jaMostrouUpdate", APP_VERSION); // evita aviso na primeira carga após update
+
+    location.reload(true); // força reload completo com código novo
+  }
+
+  // 2. Mostra o aviso BRABO de atualização (só uma vez por versão)
+  if (get("jaMostrouUpdate") !== APP_VERSION) {
+    setTimeout(() => {
+      Swal.fire({
+        title: "ATUALIZAÇÃO CONCLUÍDA!",
+        html: `
+          <div style="text-align:center;line-height:1.7;font-size:1.1em;">
+            <strong>Gorila Mode ${APP_VERSION}</strong><br><br>
+            App atualizado com sucesso!<br>
+            Bugs esmagados • Performance no talo<br><br>
+            <span style="color:#00FF9D;font-size:1.4em;font-weight:900;">BORA CRESCER!</span>
+          </div>
+        `,
+        icon: "success",
+        confirmButtonText: "VAMOSSS 🦍",
+        allowOutsideClick: false,
+        background: "#0D1B2A",
+        color: "#E0E1DD",
+        customClass: { popup: 'my-swal' }
+      }).then(() => {
+        set("jaMostrouUpdate", APP_VERSION);
+      });
+    }, 1000);
+  }
+}
